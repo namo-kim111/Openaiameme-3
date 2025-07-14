@@ -1,10 +1,10 @@
 # filename: openai_meme_explainer.py
 
 import streamlit as st
-import openai
+from openai import OpenAI
 
-# OpenAI API 키 등록 (secrets.toml에 넣어야 안전)
-openai.api_key = st.secrets["openai_api_key"]
+# OpenAI 클라이언트 생성
+client = OpenAI(api_key=st.secrets["openai_api_key"])
 
 # 프롬프트 구성 함수
 def build_prompt(meme_name):
@@ -21,28 +21,13 @@ def build_prompt(meme_name):
 # GPT API 호출 함수
 def query_gpt(prompt):
     try:
-        response = openai.ChatCompletion.create(
-            model="gpt-3.5-turbo",  # 또는 gpt-4 (유료 계정만)
-            messages=[{"role": "user", "content": prompt}],
-            max_tokens=500,
-            temperature=0.7
+        response = client.chat.completions.create(
+            model="gpt-3.5-turbo",  # 또는 gpt-4
+            messages=[
+                {"role": "system", "content": "너는 친근한 밈 설명가야."},
+                {"role": "user", "content": prompt}
+            ]
         )
-        return response.choices[0].message.content
+        return response.choices[0].message.content.strip()
     except Exception as e:
-        return f"[에러] GPT 호출 실패: {e}"
-
-# Streamlit 앱 구성
-st.set_page_config(page_title="GPT 밈 설명기", page_icon="🧠")
-st.title("🧠 OpenAI 기반 AI 밈 설명기")
-st.write("GPT-3.5가 밈의 뜻과 유래를 친절하게 설명해드려요!")
-
-meme_input = st.text_input("밈 이름을 입력하세요 (예: 킹받네, 손절각, 갓생)").strip()
-
-if st.button("설명 보기") and meme_input:
-    with st.spinner("GPT가 밈을 분석 중입니다..."):
-        prompt = build_prompt(meme_input)
-        explanation = query_gpt(prompt)
-        st.text_area("💬 밈 설명", explanation, height=300)
-
-st.markdown("---")
-st.caption("Made with ❤️ OpenAI + Streamlit")
+        return f"[에러] GPT 호출 실패: {str(e)}"
