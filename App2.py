@@ -1,10 +1,10 @@
 # filename: openai_meme_explainer.py
 
 import streamlit as st
-from openai import OpenAI
+import openai
 
 # OpenAI 클라이언트 생성
-client = OpenAI(api_key=st.secrets["openai_api_key"])
+client = openai.OpenAI(api_key=st.secrets["openai_api_key"])
 
 # 프롬프트 구성 함수
 def build_prompt(meme_name):
@@ -22,12 +22,14 @@ def build_prompt(meme_name):
 def query_gpt(prompt):
     try:
         response = client.chat.completions.create(
-            model="gpt-3.5-turbo",  # 또는 gpt-4
+            model="gpt-3.5-turbo",
             messages=[
                 {"role": "system", "content": "너는 친근한 밈 설명가야."},
                 {"role": "user", "content": prompt}
             ]
         )
         return response.choices[0].message.content.strip()
+    except openai.APIError as e:
+        return f"[에러] GPT API 오류: {e}"
     except Exception as e:
-        return f"[에러] GPT 호출 실패: {str(e)}"
+        return f"[에러] 알 수 없는 오류: {e}"
