@@ -4,7 +4,7 @@ import streamlit as st
 import openai
 
 # OpenAI 클라이언트 생성
-client = openai.OpenAI(api_key=st.secrets["openai_api_key"])
+client = openai.OpenAI(api_key="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")
 
 # 프롬프트 구성 함수
 def build_prompt(meme_name):
